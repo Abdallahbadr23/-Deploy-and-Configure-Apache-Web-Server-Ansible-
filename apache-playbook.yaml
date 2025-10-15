@@ -1,0 +1,37 @@
+---
+- name: deploy and configure apache web server 
+  hosts: all
+  become: true 
+  vars:
+   apache_document_root: /var/www/html
+   apache_server_name: mywebsite 
+   allowed_ips:
+    - 192.168.1.4
+    - 192.168.1.19
+    - 192.168.1.100
+  tasks:
+    - name: install apache
+      ansible.builtin.yum:
+          name: httpd
+          state: present 
+    - name: deploy apache configurtion templete
+      ansible.builtin.template:
+          src: apache.conf.j2
+          dest: /etc/httpd/conf.d/default.conf 
+          mode: '0644' 
+          owner: root    
+          group: root
+      notify: Restart Apache
+    - name: start and enable apache 
+      ansible.builtin.service:
+        name: httpd
+        state: started 
+        enabled: true 
+  handlers:
+      - name: Restart Apache 
+        ansible.builtin.service:
+          name: httpd
+          state: restarted      
+     
+
+
